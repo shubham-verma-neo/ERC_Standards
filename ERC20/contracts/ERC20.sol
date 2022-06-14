@@ -91,4 +91,82 @@ contract ERC20 is IERC20{
         emit Transfer(from, to, value);
         return true;
     }
+
+    /**
+    * @dev Increase the amount of tokens that an owner allowed to a spender.
+    * approve should be called when allowed_[_spender] == 0. To increment
+    * allowed value is better to use this function to avoid 2 calls (and wait until
+    * the first transaction is mined)
+    * From MonolithDAO Token.sol
+    * @param spender The address which will spend the funds.
+    * @param addedValue The amount of tokens to increase the allowance by.
+    */
+    function increaseAllowance(
+        address spender,
+        uint256 addedValue
+    )public returns(bool){
+        require(spender != address(0));
+        _allowed[msg.sender][spender]= _allowed[msg.sender][spender].add(addedValue);
+        emit Approval(msg.sender, spender, addedValue);
+        return true;
+    }
+
+    /**
+    * @dev Decrease the amount of tokens that an owner allowed to a spender.
+    * approve should be called when allowed_[_spender] == 0. To decrement
+    * allowed value is better to use this function to avoid 2 calls (and wait until
+    * the first transaction is mined)
+    * From MonolithDAO Token.sol
+    * @param spender The address which will spend the funds.
+    * @param subValue The amount of tokens to decrease the allowance by.
+    */
+    function decreaseAllowance(address spender, uint subValue)public returns(bool){
+        require(spender != address(0));
+        _allowed[spender][msg.sender]= _allowed[spender][msg.sender].sub(subValue);
+        emit Approval(msg.sender, spender, subValue);
+        return true;
+    }
+
+    /**
+    * @dev Internal function that mints an amount of the token and assigns it to
+    * an account. This encapsulates the modification of balances such that the
+    * proper events are emitted.
+    * @param account The account that will receive the created tokens.
+    * @param amount The amount that will be created.
+    */
+    function _mint(address account, uint amount)internal {
+        require(account != address(0));
+        _totalSupply = _totalSupply.add(amount);
+        _balanceOf[account]= _balanceOf[account].add(amount);
+        emit Transfer(address(0), account, amount);
+    }
+
+    /**
+    * @dev Internal function that burns an amount of the token of a given
+    * account.
+    * @param account The account whose tokens will be burnt.
+    * @param amount The amount that will be burnt.
+    */
+    function _burn(address account, uint amount)internal{
+        require(amount <= _balanceOf[account]);
+        require(account != address(0));
+
+        _totalSupply= _totalSupply.sub(amount);
+        _balanceOf[account]= _balanceOf[account].sub(amount);
+        emit Transfer(account, address(0), amount);
+    }
+
+    /**
+    * @dev Internal function that burns an amount of the token of a given
+    * account, deducting from the sender's allowance for said account. Uses the
+    * internal burn function.
+    * @param account The account whose tokens will be burnt.
+    * @param amount The amount that will be burnt.
+    */
+    function _burnForm(address account, uint amount)internal{
+        // Should https://github.com/OpenZeppelin/zeppelin-solidity/issues/707 be accepted,
+        // this function needs to emit an event with the updated approval.  
+        _allowed[account][msg.sender]= _allowed[account][msg.sender].sub(amount);
+        _burn(account, amount);
+    }
 }
