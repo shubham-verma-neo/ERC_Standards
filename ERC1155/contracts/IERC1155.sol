@@ -41,6 +41,7 @@ interface IERC1155 {
     event TransferBatch(
         address indexed _operator,
         address indexed _from,
+        address indexed _to,
         uint256[] _ids,
         uint256[] _values
     );
